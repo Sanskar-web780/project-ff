@@ -7,6 +7,8 @@
     <link
       href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap"
       rel="stylesheet" />
+    <!-- html2canvas library for PNG export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
       img {
         height: 200px;
@@ -110,6 +112,14 @@
       .reset-btn:hover {
         box-shadow: 0 4px 10px rgba(220, 53, 69, 0.4);
       }
+      .download-btn {
+        background: linear-gradient(45deg, #28a745, #20c997);
+        margin: 20px auto;
+        display: block;
+      }
+      .download-btn:hover {
+        box-shadow: 0 4px 10px rgba(40, 167, 69, 0.4);
+      }
       table {
         width: 100%;
         background: rgba(255, 255, 255, 0.1); /* Semi-transparent */
@@ -137,8 +147,8 @@
       }
       tr:hover {
         background: rgba(255, 107, 53, 0.1);
-        transform: scale(1.01);
-        transition: all 0.2s;
+        /* Removed transform to avoid layout shifts */
+        transition: background 0.2s;
       }
       .summary-row {
         font-weight: bold;
@@ -149,6 +159,14 @@
         color: #ccc;
         font-style: italic;
         padding: 20px;
+      }
+      .win-rate {
+        color: #ff6b35;
+        font-weight: bold;
+      }
+      .download-container {
+        text-align: center;
+        margin: 20px 0;
       }
       @media (max-width: 768px) {
         input[type="text"],
@@ -171,6 +189,11 @@
         button {
           width: 100%;
           margin: 5px 0;
+        }
+        img {
+          margin-left: 0;
+          display: block;
+          margin: 0 auto;
         }
       }
     </style>
@@ -218,7 +241,7 @@
     </div>
 
     <div class="esports-header">UPCOMING ESPORTS SCRIMS POINTS TABLE</div>
-    <div><img src="./uce.png" /></div>
+    <div><img src="./uce.png" alt="Upcoming Esports Logo" /></div>
 
     <table id="pointsTable">
       <thead>
@@ -228,20 +251,143 @@
           <th>Matches Played</th>
           <th>Kills</th>
           <th>Booyahs</th>
+          <th>Win Rate</th>
           <th>Total Points</th>
         </tr>
       </thead>
       <tbody id="tableBody">
         <tr>
-          <td colspan="6" class="no-data">
+          <td colspan="7" class="no-data">
             No teams added yet. Add some to see the table!
           </td>
         </tr>
       </tbody>
     </table>
 
+    <!-- Download button container -->
+    <div class="download-container" id="downloadContainer" style="display: none;">
+      <button type="button" class="download-btn" onclick="downloadTableAsPNG()">
+        Download Table as PNG
+      </button>
+    </div>
+
+    <footer style="text-align: center; margin-top: 20px; color: #ccc;">
+      <p>&copy; 2025 VINAYAK SHARMA <a href="#" style="color: #ff6b35;"></a></p>
+    </footer>
+
     <script>
       let teams = []; // Array to store team data
+
+      // Load teams from localStorage on page load
+      function loadTeams() {
+        const saved = localStorage.getItem('freeFireTeams');
+        if (saved) {
+          teams = JSON.parse(saved);
+          renderTable();
+        }
+      }
+
+      // Save teams to localStorage
+      function saveTeams() {
+        localStorage.setItem('freeFireTeams', JSON.stringify(teams));
+      }
+
+      // Download table as PNG
+      function downloadTableAsPNG() {
+        const table = document.getElementById('pointsTable');
+        const downloadContainer = document.getElementById('downloadContainer');
+
+        // Temporarily hide the download button to exclude it from the capture
+        downloadContainer.style.display = 'none';
+
+        html2canvas(table, {
+          backgroundColor: '#0f0f23', // Match body background for dark theme
+          scale: 2, // Higher resolution
+          useCORS: true, // For external images like the logo if needed
+          allowTaint: true
+        }).then(canvas => {
+          // Restore the download button
+          downloadContainer.style.display = 'block';
+
+          // Create download link
+          const link = document.createElement('a');
+          link.download = 'free-fire-points-table.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+
+          // Optional: Show success message
+          alert('Table downloaded as PNG!');
+        }).catch(err => {
+          // Restore button on error
+          downloadContainer.style.display = 'block';
+          console.error('Error generating PNG:', err);
+          alert('Failed to download. Please try again.');
+        });
+      }
+
+      // Render the table
+      function renderTable() {
+        const tbody = document.getElementById("tableBody");
+        const downloadContainer = document.getElementById('downloadContainer');
+
+        if (teams.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="7" class="no-data">No teams added yet. Add some to see the table!</td></tr>';
+          downloadContainer.style.display = 'none';
+          return;
+        }
+
+        // Show download button when teams exist
+        downloadContainer.style.display = 'block';
+
+        // Sort teams by points (descending)
+        teams.sort((a, b) => b.points - a.points);
+
+        let html = "";
+        teams.forEach((team, index) => {
+          const rank = index + 1;
+          const winRate = team.matches > 0 ? ((team.booyahs / team.matches) * 100).toFixed(1) + '%' : '0%';
+          html += `
+            <tr>
+              <td>${rank}</td>
+              <td>${team.name}</td>
+              <td>${team.matches}</td>
+              <td>${team.kills}</td>
+              <td>${team.booyahs}</td>
+              <td class="win-rate">${winRate}</td>
+              <td>${team.points}</td>
+            </tr>
+          `;
+        });
+
+        // Add summary row
+        const totalPoints = teams.reduce((sum, team) => sum + team.points, 0);
+        const avgPoints = teams.length > 0 ? (totalPoints / teams.length).toFixed(0) : 0;
+        const totalBooyahs = teams.reduce((sum, team) => sum + team.booyahs, 0);
+        const totalMatches = teams.reduce((sum, team) => sum + team.matches, 0);
+        const avgWinRate = totalMatches > 0 ? ((totalBooyahs / totalMatches) * 100).toFixed(1) + '%' : '0%';
+        html += `
+          <tr class="summary-row">
+            <td colspan="6" style="text-align: right;">Summary (Total Booyahs: ${totalBooyahs}, Avg Win Rate: ${avgWinRate}):</td>
+            <td>${totalPoints} total pts (Avg: ${avgPoints})</td>
+          </tr>
+        `;
+
+        tbody.innerHTML = html;
+      }
+
+      // Reset the table
+      function resetTable() {
+        if (
+          confirm(
+            "Are you sure you want to reset the table? All data will be lost."
+          )
+        ) {
+          teams = [];
+          localStorage.removeItem('freeFireTeams');
+          renderTable();
+        }
+      }
 
       // Handle form submission
       document
@@ -293,6 +439,7 @@
           // Simplified scoring: 1 pt/kill + 12 pts/booyah (TOP 1 wins only)
           const points = kills * 1 + booyahs * 12;
           teams.push({ name, matches, kills, booyahs, points });
+          saveTeams(); // Save after adding
 
           // Clear form
           document.getElementById("teamName").value = "";
@@ -304,62 +451,9 @@
           renderTable();
         });
 
-      // Render the table
-      function renderTable() {
-        const tbody = document.getElementById("tableBody");
-
-        if (teams.length === 0) {
-          tbody.innerHTML =
-            '<tr><td colspan="6" class="no-data">No teams added yet. Add some to see the table!</td></tr>';
-          return;
-        }
-
-        // Sort teams by points (descending)
-        teams.sort((a, b) => b.points - a.points);
-
-        let html = "";
-        teams.forEach((team, index) => {
-          const rank = index + 1;
-          html += `
-                    <tr>
-                        <td>${rank}</td>
-                        <td>${team.name}</td>
-                        <td>${team.matches}</td>
-                        <td>${team.kills}</td>
-                        <td>${team.booyahs}</td>
-                        <td>${team.points}</td>
-                    </tr>
-                `;
-        });
-
-        // Add summary row
-        const totalPoints = teams.reduce((sum, team) => sum + team.points, 0);
-        const avgPoints = (totalPoints / teams.length).toFixed(0);
-        const totalBooyahs = teams.reduce((sum, team) => sum + team.booyahs, 0);
-        html += `
-                <tr class="summary-row">
-                    <td colspan="5" style="text-align: right;">Summary (Total Booyahs: ${totalBooyahs}):</td>
-                    <td>${totalPoints} total pts (Avg: ${avgPoints})</td>
-                </tr>
-            `;
-
-        tbody.innerHTML = html;
-      }
-
-      // Reset the table
-      function resetTable() {
-        if (
-          confirm(
-            "Are you sure you want to reset the table? All data will be lost."
-          )
-        ) {
-          teams = [];
-          renderTable();
-        }
-      }
+      // Load teams on page load
+      loadTeams();
     </script>
-    <footer>
-      <p><a href="©VINAYAK SHARMA">©VINAYAK SHARMA</a></p>
-    </footer>
   </body>
 </html>
+
