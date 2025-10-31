@@ -3,42 +3,56 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Upcoming Esports - Free Fire Points Table calc</title>
+    <title>Free Fire Esports Points Table Generator</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
+      rel="stylesheet" />
+    <!-- Futuristic font -->
     <link
       href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap"
       rel="stylesheet" />
+    <!-- For esports header -->
     <!-- html2canvas library for PNG export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-      img {
-        height: 200px;
-        margin-left: 339px;
-      }
       body {
-        font-family: Arial, sans-serif;
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 20px;
+        font-family: "Orbitron", sans-serif;
+        margin: 0;
+        padding: 0;
         background: linear-gradient(
           135deg,
-          #0f0f23 0%,
-          #1a1a2e 50%,
-          #16213e 100%
-        ); /* Free Fire-inspired dark tactical gradient */
-        color: #fff;
+          #000000 0%,
+          #1a1a1a 50%,
+          #ff4500 100%
+        ); /* Dark to orange gradient */
+        background-attachment: fixed;
+        color: #ffffff;
+        overflow-x: hidden;
         min-height: 100vh;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("https://i.imgur.com/4Q8Z8Z8.png"); /* Placeholder for Free Fire background; replace with game image */
+        background-size: cover;
+        background-position: center;
+        opacity: 0.1;
+        z-index: -1;
       }
       h1 {
         text-align: center;
-        color: #ff6b35; /* Free Fire orange */
-        font-family: "Audiowide", cursive;
+        color: #00bfff;
+        text-shadow: 0 0 10px #00bfff, 0 0 20px #00bfff;
+        margin-top: 20px;
         font-size: 2.5em;
-        margin-bottom: 10px;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
       }
       .subtitle {
         text-align: center;
-        color: #ccc;
+        color: #cccccc;
         font-size: 1.1em;
         margin-bottom: 30px;
         line-height: 1.4;
@@ -52,13 +66,22 @@
         text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
         letter-spacing: 2px;
       }
+      img {
+        height: 200px;
+        display: block;
+        margin: 0 auto;
+      }
+      .container {
+        max-width: 900px;
+        margin: 20px auto;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(255, 69, 0, 0.5);
+        border: 2px solid #ff4500;
+      }
       .form-container {
-        background: rgba(
-          255,
-          255,
-          255,
-          0.1
-        ); /* Semi-transparent for dark theme */
+        background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
         padding: 20px;
         border-radius: 12px;
@@ -75,13 +98,24 @@
         font-size: 0.9em;
         color: #ddd;
       }
+      .match-input {
+        margin-bottom: 15px;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 8px;
+        border: 1px solid #ff4500;
+      }
+      .match-input h3 {
+        color: #00bfff;
+        margin-bottom: 10px;
+      }
       input[type="text"],
       input[type="number"] {
-        padding: 12px;
-        margin: 8px;
+        padding: 8px;
+        margin: 5px;
         border: 1px solid #ff6b35;
         border-radius: 6px;
-        width: 140px;
+        width: 80px;
         background: rgba(255, 255, 255, 0.9);
         color: #333;
       }
@@ -122,7 +156,7 @@
       }
       table {
         width: 100%;
-        background: rgba(255, 255, 255, 0.1); /* Semi-transparent */
+        background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
         border-collapse: collapse;
         border-radius: 12px;
@@ -147,7 +181,6 @@
       }
       tr:hover {
         background: rgba(255, 107, 53, 0.1);
-        /* Removed transform to avoid layout shifts */
         transition: background 0.2s;
       }
       .summary-row {
@@ -160,15 +193,19 @@
         font-style: italic;
         padding: 20px;
       }
-      .win-rate {
-        color: #ff6b35;
-        font-weight: bold;
-      }
       .download-container {
         text-align: center;
         margin: 20px 0;
       }
+      footer {
+        text-align: center;
+        margin-top: 20px;
+        color: #ccc;
+      }
       @media (max-width: 768px) {
+        .match-input {
+          padding: 10px;
+        }
         input[type="text"],
         input[type="number"] {
           width: 100%;
@@ -191,9 +228,7 @@
           margin: 5px 0;
         }
         img {
-          margin-left: 0;
-          display: block;
-          margin: 0 auto;
+          height: 150px;
         }
       }
     </style>
@@ -201,78 +236,124 @@
   <body>
     <h1>Free Fire Points Table Generator</h1>
     <p class="subtitle">
-      Track team stats (kills and booyahs) for esports rankings.
-      <br /><strong>Booyah = Game Win (TOP 1 finish)</strong>: 12 pts per
-      booyah. <br />Kills: 1 pt each. Total = (Kills * 1) + (Booyahs * 12).
-      <br />No points for other placements (TOP 2-12).
+      Track team stats for 3 matches (Custom Points System).
+      <br /><strong>Placement Points:</strong> 1st: 12, 2nd: 9, 3rd: 8, 4th: 7,
+      5th: 6, 6th: 5, 7th: 4, 8th: 3, 9th: 2, 10th: 1, 11th: 0, 12th: 0, 13th+:
+      0. <br /><strong>Kills:</strong> 1 pt each. Total = Placement Points +
+      Kill Points.
     </p>
 
-    <div class="form-container">
-      <h2 style="color: #ff6b35; margin-bottom: 15px">Add Team</h2>
-      <form id="teamForm">
-        <input type="text" id="teamName" placeholder="Team Name" required />
-        <input
-          type="number"
-          id="matches"
-          placeholder="Matches Played"
-          min="0"
-          required />
-        <input
-          type="number"
-          id="kills"
-          placeholder="Total Kills"
-          min="0"
-          required />
-        <input
-          type="number"
-          id="booyahs"
-          placeholder="Booyahs (Game Wins/TOP 1)"
-          min="0"
-          required />
-        <button type="submit">Add Team</button>
-        <button type="button" class="reset-btn" onclick="resetTable()">
-          Reset Table
+    <div class="container">
+      <div class="form-container">
+        <h2 style="color: #ff6b35; margin-bottom: 15px">
+          Add Team (3 Matches)
+        </h2>
+        <form id="teamForm">
+          <input type="text" id="teamName" placeholder="Team Name" required />
+          <div class="match-input">
+            <h3>Match 1</h3>
+            <label
+              >Placement:
+              <input
+                type="number"
+                id="p1"
+                placeholder="1-100"
+                min="1"
+                max="100"
+                required
+            /></label>
+            <label
+              >Kills:
+              <input type="number" id="k1" placeholder="0" min="0" required
+            /></label>
+          </div>
+          <div class="match-input">
+            <h3>Match 2</h3>
+            <label
+              >Placement:
+              <input
+                type="number"
+                id="p2"
+                placeholder="1-100"
+                min="1"
+                max="100"
+                required
+            /></label>
+            <label
+              >Kills:
+              <input type="number" id="k2" placeholder="0" min="0" required
+            /></label>
+          </div>
+          <div class="match-input">
+            <h3>Match 3</h3>
+            <label
+              >Placement:
+              <input
+                type="number"
+                id="p3"
+                placeholder="1-100"
+                min="1"
+                max="100"
+                required
+            /></label>
+            <label
+              >Kills:
+              <input type="number" id="k3" placeholder="0" min="0" required
+            /></label>
+          </div>
+          <button type="submit">Add Team</button>
+          <button type="button" class="reset-btn" onclick="resetTable()">
+            Reset Table
+          </button>
+        </form>
+        <div class="scoring-note">
+          <strong>Example:</strong> Match 1: 1st (12 pts) + 5 kills (5 pts) =
+          17; Match 2: 2nd (9) + 3 kills (3) = 12; Match 3: 5th (6) + 2 kills
+          (2) = 8; Total: 37 pts.
+        </div>
+      </div>
+
+      <div class="esports-header">UPCOMING ESPORTS T3 SCRIMS POINTS TABLE</div>
+      <div><img src="./uce.png" alt="Upcoming Esports Logo" /></div>
+      <!-- Replace with your logo path -->
+
+      <table id="pointsTable">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Team</th>
+            <th>Matches</th>
+            <th>Placement Pts</th>
+            <th>Kills</th>
+            <th>Kill Pts</th>
+            <th>Total Points</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr>
+            <td colspan="7" class="no-data">
+              No teams added yet. Add some to see the table!
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Download button container -->
+      <div
+        class="download-container"
+        id="downloadContainer"
+        style="display: none">
+        <button
+          type="button"
+          class="download-btn"
+          onclick="downloadTableAsPNG()">
+          Download Table as PNG
         </button>
-      </form>
-      <div class="scoring-note">
-        <strong>Example:</strong> 10 matches, 25 kills, 3 booyahs (wins) = (25 *
-        1) + (3 * 12) = 25 + 36 = 61 total pts.
       </div>
     </div>
 
-    <div class="esports-header">UPCOMING ESPORTS SCRIMS POINTS TABLE</div>
-    <div><img src="./uce.png" alt="Upcoming Esports Logo" /></div>
-
-    <table id="pointsTable">
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Team</th>
-          <th>Matches Played</th>
-          <th>Kills</th>
-          <th>Booyahs</th>
-          <th>Win Rate</th>
-          <th>Total Points</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody">
-        <tr>
-          <td colspan="7" class="no-data">
-            No teams added yet. Add some to see the table!
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- Download button container -->
-    <div class="download-container" id="downloadContainer" style="display: none;">
-      <button type="button" class="download-btn" onclick="downloadTableAsPNG()">
-        Download Table as PNG
-      </button>
-    </div>
-
-    <footer style="text-align: center; margin-top: 20px; color: #ccc;">
-      <p>&copy; 2025 VINAYAK SHARMA <a href="#" style="color: #ff6b35;"></a></p>
+    <footer>
+      <p>&copy; 2025 VINAYAK SHARMA <a href="#" style="color: #ff6b35"></a></p>
     </footer>
 
     <script>
@@ -280,7 +361,7 @@
 
       // Load teams from localStorage on page load
       function loadTeams() {
-        const saved = localStorage.getItem('freeFireTeams');
+        const saved = localStorage.getItem("freeFireTeams");
         if (saved) {
           teams = JSON.parse(saved);
           renderTable();
@@ -289,89 +370,93 @@
 
       // Save teams to localStorage
       function saveTeams() {
-        localStorage.setItem('freeFireTeams', JSON.stringify(teams));
+        localStorage.setItem("freeFireTeams", JSON.stringify(teams));
       }
 
       // Download table as PNG
       function downloadTableAsPNG() {
-        const table = document.getElementById('pointsTable');
-        const downloadContainer = document.getElementById('downloadContainer');
+        const table = document.getElementById("pointsTable");
+        const downloadContainer = document.getElementById("downloadContainer");
 
         // Temporarily hide the download button to exclude it from the capture
-        downloadContainer.style.display = 'none';
+        downloadContainer.style.display = "none";
 
         html2canvas(table, {
-          backgroundColor: '#0f0f23', // Match body background for dark theme
+          backgroundColor: "#000000", // Match body background for dark theme
           scale: 2, // Higher resolution
           useCORS: true, // For external images like the logo if needed
-          allowTaint: true
-        }).then(canvas => {
-          // Restore the download button
-          downloadContainer.style.display = 'block';
+          allowTaint: true,
+        })
+          .then((canvas) => {
+            // Restore the download button
+            downloadContainer.style.display = "block";
 
-          // Create download link
-          const link = document.createElement('a');
-          link.download = 'free-fire-points-table.png';
-          link.href = canvas.toDataURL('image/png');
-          link.click();
+            // Create download link
+            const link = document.createElement("a");
+            link.download = "free-fire-points-table.png";
+            link.href = canvas.toDataURL("image/png");
+            link.click();
 
-          // Optional: Show success message
-          alert('Table downloaded as PNG!');
-        }).catch(err => {
-          // Restore button on error
-          downloadContainer.style.display = 'block';
-          console.error('Error generating PNG:', err);
-          alert('Failed to download. Please try again.');
-        });
+            // Optional: Show success message
+            alert("Table downloaded as PNG!");
+          })
+          .catch((err) => {
+            // Restore button on error
+            downloadContainer.style.display = "block";
+            console.error("Error generating PNG:", err);
+            alert("Failed to download. Please try again.");
+          });
       }
 
       // Render the table
       function renderTable() {
         const tbody = document.getElementById("tableBody");
-        const downloadContainer = document.getElementById('downloadContainer');
+        const downloadContainer = document.getElementById("downloadContainer");
 
         if (teams.length === 0) {
           tbody.innerHTML =
             '<tr><td colspan="7" class="no-data">No teams added yet. Add some to see the table!</td></tr>';
-          downloadContainer.style.display = 'none';
+          downloadContainer.style.display = "none";
           return;
         }
 
         // Show download button when teams exist
-        downloadContainer.style.display = 'block';
+        downloadContainer.style.display = "block";
 
-        // Sort teams by points (descending)
-        teams.sort((a, b) => b.points - a.points);
+        // Sort teams by total points (descending)
+        teams.sort((a, b) => b.totalPoints - a.totalPoints);
 
         let html = "";
         teams.forEach((team, index) => {
           const rank = index + 1;
-          const winRate = team.matches > 0 ? ((team.booyahs / team.matches) * 100).toFixed(1) + '%' : '0%';
           html += `
-            <tr>
-              <td>${rank}</td>
-              <td>${team.name}</td>
-              <td>${team.matches}</td>
-              <td>${team.kills}</td>
-              <td>${team.booyahs}</td>
-              <td class="win-rate">${winRate}</td>
-              <td>${team.points}</td>
-            </tr>
-          `;
+                    <tr>
+                        <td>${rank}</td>
+                        <td>${team.name}</td>
+                        <td>${team.matches}</td>
+                        <td>${team.placementPoints}</td>
+                        <td>${team.kills}</td>
+                        <td>${team.killPoints}</td>
+                        <td>${team.totalPoints}</td>
+                    </tr>
+                `;
         });
 
         // Add summary row
-        const totalPoints = teams.reduce((sum, team) => sum + team.points, 0);
-        const avgPoints = teams.length > 0 ? (totalPoints / teams.length).toFixed(0) : 0;
-        const totalBooyahs = teams.reduce((sum, team) => sum + team.booyahs, 0);
+        const totalPoints = teams.reduce(
+          (sum, team) => sum + team.totalPoints,
+          0
+        );
+        const avgPoints =
+          teams.length > 0 ? (totalPoints / teams.length).toFixed(0) : 0;
         const totalMatches = teams.reduce((sum, team) => sum + team.matches, 0);
-        const avgWinRate = totalMatches > 0 ? ((totalBooyahs / totalMatches) * 100).toFixed(1) + '%' : '0%';
+        const totalKills = teams.reduce((sum, team) => sum + team.kills, 0);
         html += `
-          <tr class="summary-row">
-            <td colspan="6" style="text-align: right;">Summary (Total Booyahs: ${totalBooyahs}, Avg Win Rate: ${avgWinRate}):</td>
-            <td>${totalPoints} total pts (Avg: ${avgPoints})</td>
-          </tr>
-        `;
+                <tr class="summary-row">
+                    <td colspan="6" style="text-align: right;">Summary (Total Matches: ${totalMatches}, Total Kills: ${totalKills}):</td>
+                    <td>${totalPoints} total pts (Avg: ${avgPoints})</td>
+                </tr>
+            `;
 
         tbody.innerHTML = html;
       }
@@ -384,7 +469,7 @@
           )
         ) {
           teams = [];
-          localStorage.removeItem('freeFireTeams');
+          localStorage.removeItem("freeFireTeams");
           renderTable();
         }
       }
@@ -396,36 +481,39 @@
           e.preventDefault();
 
           const name = document.getElementById("teamName").value.trim();
-          const matches = parseInt(document.getElementById("matches").value);
-          const kills = parseInt(document.getElementById("kills").value);
-          const booyahs = parseInt(document.getElementById("booyahs").value);
+          const placements = [];
+          const killsPerMatch = [];
+          for (let i = 1; i <= 3; i++) {
+            const p = parseInt(document.getElementById(`p${i}`).value);
+            const k = parseInt(document.getElementById(`k${i}`).value);
+            placements.push(p);
+            killsPerMatch.push(k);
+          }
 
           // Validation
           if (!name) {
             alert("Please enter a team name.");
             return;
           }
-          if (isNaN(matches) || matches < 0 || !Number.isInteger(matches)) {
-            alert(
-              "Please enter a valid number of matches (non-negative integer)."
-            );
-            return;
-          }
-          if (isNaN(kills) || kills < 0 || !Number.isInteger(kills)) {
-            alert(
-              "Please enter a valid number of kills (non-negative integer)."
-            );
-            return;
-          }
-          if (isNaN(booyahs) || booyahs < 0 || !Number.isInteger(booyahs)) {
-            alert(
-              "Please enter a valid number of booyahs (non-negative integer)."
-            );
-            return;
-          }
-          if (booyahs > matches) {
-            alert("Booyahs (wins) cannot exceed matches played.");
-            return;
+          for (let i = 0; i < 3; i++) {
+            if (
+              isNaN(placements[i]) ||
+              placements[i] < 1 ||
+              placements[i] > 100
+            ) {
+              alert(
+                `Please enter a valid placement for Match ${i + 1} (1-100).`
+              );
+              return;
+            }
+            if (isNaN(killsPerMatch[i]) || killsPerMatch[i] < 0) {
+              alert(
+                `Please enter a valid number of kills for Match ${
+                  i + 1
+                } (non-negative).`
+              );
+              return;
+            }
           }
           if (
             teams.some((team) => team.name.toLowerCase() === name.toLowerCase())
@@ -436,24 +524,35 @@
             return;
           }
 
-          // Simplified scoring: 1 pt/kill + 12 pts/booyah (TOP 1 wins only)
-          const points = kills * 1 + booyahs * 12;
-          teams.push({ name, matches, kills, booyahs, points });
-          saveTeams(); // Save after adding
-
-          // Clear form
-          document.getElementById("teamName").value = "";
-          document.getElementById("matches").value = "";
-          document.getElementById("kills").value = "";
-          document.getElementById("booyahs").value = "";
-
-          // Update table
+          // Calculate points
+          const placementPointsArray = [12, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 0]; // For 1st to 12th
+          const placementPoints = placements.reduce((sum, p) => {
+            if (p <= 12) return sum + placementPointsArray[p - 1];
+            return sum;
+          }, 0);
+          const kills = killsPerMatch.reduce((sum, k) => sum + k, 0);
+          const killPoints = kills * 1;
+          const totalPoints = placementPoints + killPoints;
+          // Create team object
+          const team = {
+            name: name,
+            matches: 3,
+            placementPoints: placementPoints,
+            kills: kills,
+            killPoints: killPoints,
+            totalPoints: totalPoints,
+          };
+          // Add to teams array
+          teams.push(team);
+          // Save to localStorage
+          saveTeams();
+          // Render the table
           renderTable();
+          // Reset the form
+          document.getElementById("teamForm").reset();
         });
-
       // Load teams on page load
-      loadTeams();
+      window.onload = loadTeams;
     </script>
   </body>
 </html>
-
